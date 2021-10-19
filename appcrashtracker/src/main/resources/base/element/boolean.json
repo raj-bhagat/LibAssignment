@@ -1,0 +1,132 @@
+{
+  "boolean": [
+    {
+      "name": "boolean_1",
+      "value": true
+    },
+    {
+      "name": "class_name",
+      "value": false
+    },
+    {
+      "name": "message",
+      "value": false
+    },
+    {
+      "name": "localized_message",
+      "value": false
+    },
+    {
+      "name": "causes",
+      "value": false
+    },
+    {
+      "name": "stack_trace",
+      "value": false
+    },
+    {
+      "name": "brand_name",
+      "value": false
+    },
+    {
+      "name": "device_name",
+      "value": false
+    },
+    {
+      "name": "sdk_version",
+      "value": false
+    },
+    {
+      "name": "release",
+      "value": false
+    },
+    {
+      "name": "height",
+      "value": false
+    },
+    {
+      "name": "width",
+      "value": false
+    },
+    {
+      "name": "app_version",
+      "value": false
+    },
+    {
+      "name": "tablet",
+      "value": false
+    },
+    {
+      "name": "package_name",
+      "value": false
+    },
+    {
+      "name": "device_orientation",
+      "value": false
+    },
+    {
+      "name": "screen_layout",
+      "value": false
+    },
+    {
+      "name": "vm_heap_size",
+      "value": false
+    },
+    {
+      "name": "allocated_vm_size",
+      "value": false
+    },
+    {
+      "name": "vm_max_heap_size",
+      "value": false
+    },
+    {
+      "name": "vm_free_heap_size",
+      "value": false
+    },
+    {
+      "name": "native_allocated_size",
+      "value": false
+    },
+    {
+      "name": "battery_percentage",
+      "value": false
+    },
+    {
+      "name": "battery_charging",
+      "value": false
+    },
+    {
+      "name": "battery_charging_via",
+      "value": false
+    },
+    {
+      "name": "sd_card_status",
+      "value": false
+    },
+    {
+      "name": "internal_memory_size",
+      "value": false
+    },
+    {
+      "name": "external_memory_size",
+      "value": false
+    },
+    {
+      "name": "internal_free_space",
+      "value": false
+    },
+    {
+      "name": "external_free_space",
+      "value": false
+    },
+    {
+      "name": "network_mode",
+      "value": false
+    },
+    {
+      "name": "country",
+      "value": false
+    }
+  ]
+}
