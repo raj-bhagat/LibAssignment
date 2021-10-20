@@ -29,22 +29,62 @@ import ohos.telephony.SimInfoManager;
 import ohos.telephony.TelephonyConstants;
 import ohos.utils.zson.ZSONException;
 import ohos.utils.zson.ZSONObject;
-
-import java.io.*;
-import java.net.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.example.appcrashtracker.ResourceTable.*;
+import static com.example.appcrashtracker.ResourceTable.Boolean_allocated_vm_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_app_version;
+import static com.example.appcrashtracker.ResourceTable.Boolean_battery_charging;
+import static com.example.appcrashtracker.ResourceTable.Boolean_battery_charging_via;
+import static com.example.appcrashtracker.ResourceTable.Boolean_battery_percentage;
+import static com.example.appcrashtracker.ResourceTable.Boolean_brand_name;
+import static com.example.appcrashtracker.ResourceTable.Boolean_causes;
+import static com.example.appcrashtracker.ResourceTable.Boolean_class_name;
+import static com.example.appcrashtracker.ResourceTable.Boolean_country;
+import static com.example.appcrashtracker.ResourceTable.Boolean_device_name;
+import static com.example.appcrashtracker.ResourceTable.Boolean_device_orientation;
+import static com.example.appcrashtracker.ResourceTable.Boolean_external_free_space;
+import static com.example.appcrashtracker.ResourceTable.Boolean_external_memory_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_height;
+import static com.example.appcrashtracker.ResourceTable.Boolean_internal_free_space;
+import static com.example.appcrashtracker.ResourceTable.Boolean_internal_memory_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_localized_message;
+import static com.example.appcrashtracker.ResourceTable.Boolean_message;
+import static com.example.appcrashtracker.ResourceTable.Boolean_native_allocated_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_network_mode;
+import static com.example.appcrashtracker.ResourceTable.Boolean_package_name;
+import static com.example.appcrashtracker.ResourceTable.Boolean_release;
+import static com.example.appcrashtracker.ResourceTable.Boolean_screen_layout;
+import static com.example.appcrashtracker.ResourceTable.Boolean_sd_card_status;
+import static com.example.appcrashtracker.ResourceTable.Boolean_sdk_version;
+import static com.example.appcrashtracker.ResourceTable.Boolean_stack_trace;
+import static com.example.appcrashtracker.ResourceTable.Boolean_tablet;
+import static com.example.appcrashtracker.ResourceTable.Boolean_vm_free_heap_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_vm_heap_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_vm_max_heap_size;
+import static com.example.appcrashtracker.ResourceTable.Boolean_width;
+import static com.example.appcrashtracker.ResourceTable.String_url;
 
 
-public class ExceptionHandler implements
-		Thread.UncaughtExceptionHandler {
+public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 	private final Ability ability;
-	Intent intent ;
+	Intent intent;
 	ZSONObject jObjectData;
 	String AbilityName;
 	Class<?> name;
@@ -74,7 +114,7 @@ public class ExceptionHandler implements
 	private boolean battery_charging = false;
 	private boolean battery_charging_via= false;
 	private boolean sd_card_status= false;
-	private boolean internal_memory_size= false;
+	private boolean internal_memory_size=false;
 	private boolean external_memory_size= false;
 	private boolean internal_free_space= false;
 	private boolean external_free_space= false;
@@ -180,11 +220,11 @@ public class ExceptionHandler implements
 			if(battery_percentage)
 				jObjectData.put("Battery_Percentage", getBatteryChargeLevel());
 			if(battery_charging)
-				jObjectData.put("Battery_Charging_Status", getBatteryStatus(ability));
+				jObjectData.put("Battery_Charging_Status", getBatteryStatus());
 			if(battery_charging_via)
-				jObjectData.put("Battery_Charging_Via", getBatteryChargingMode(ability));
+				jObjectData.put("Battery_Charging_Via", getBatteryChargingMode());
 			if(sd_card_status)
-				jObjectData.put("SDCard_Status", getSDCardStatus(ability));
+				jObjectData.put("SDCard_Status", getSDCardStatus());
 			if(internal_memory_size)
 				jObjectData.put("Internal_Memory_Size",  getTotalInternalMemorySize(ability));
 			if(external_memory_size)
@@ -320,7 +360,7 @@ public class ExceptionHandler implements
 			case EMERGENCY:
 				return "EMERGENCY";
 			default:
-				return "Unknowm";
+				return "Unknown";
 		}
 	}
 
@@ -339,6 +379,7 @@ public class ExceptionHandler implements
 			info = manager.getBundleInfo(con.getBundleName(), 0);
 		} catch ( RemoteException e) {
 			HiLog.error(new HiLogLabel(HiLog.LOG_APP, 0x00201 ,""+ability.getBundleName()), "Name not found Exception");
+			return "Version not found";
 		}
 		return info.getVersionName();
 	}
@@ -369,14 +410,12 @@ public class ExceptionHandler implements
 		return result.toString();
 	}
 
-	@SuppressWarnings("deprecation")
 	public boolean isConnectingToInternet(Context con){
 		NetManager netManager = NetManager.getInstance(con);
 		NetCapabilities netCapabilities = netManager.getNetCapabilities(netManager.getDefaultNet());
 		return netCapabilities.hasCap(NetCapabilities.NET_CAPABILITY_VALIDATED);
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getScreenOrientation(Ability abl)
 	{
 
@@ -398,7 +437,7 @@ public class ExceptionHandler implements
 			case DeviceCapability.SCREEN_LDPI:
 				return "Large Screen";
 			case DeviceCapability.SCREEN_MDPI:
-				return  "Mediun Screen";
+				return  "Medium Screen";
 			case DeviceCapability.SCREEN_SDPI:
 				return  "Small Screen";
 			case DeviceCapability.SCREEN_XLDPI:
@@ -419,7 +458,7 @@ public class ExceptionHandler implements
 		return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
-	public String getBatteryStatus(Ability abl)
+	public String getBatteryStatus()
 	{
 		BatteryInfo bi = new BatteryInfo();
 		BatteryInfo.BatteryChargeState status = bi.getChargingStatus();
@@ -431,13 +470,13 @@ public class ExceptionHandler implements
 			case FULL:
 				return "Battery Full";
 			case RESERVED:
-				return"Reseved";
+				return"Reserved";
 			default:
 				return"Unknown";
 		}
 	}
 
-	public String getBatteryChargingMode(Ability abl)
+	public String getBatteryChargingMode()
 	{
 		BatteryInfo bi = new BatteryInfo();
 		BatteryInfo.BatteryPluggedType type = bi.getPluggedType();
@@ -454,11 +493,11 @@ public class ExceptionHandler implements
 		}
 	}
 
-	public String getSDCardStatus(Ability abl)
+	public String getSDCardStatus()
 	{
 		boolean storage = ohos.data.usage.DataUsage.isSupported();
 		if (storage){
-			return "External Storage Not Suported";
+			return "External Storage Not Supported";
 		}
 		else{
 			MountState isSDPresent = ohos.data.usage.DataUsage.getDiskMountedStatus();
@@ -475,28 +514,22 @@ public class ExceptionHandler implements
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getAvailableInternalMemorySize(Context con ) {
-		FilePath fp  = new FilePath();
 		File path = FilePath.getInternalStorage(con);
 		StatVfs stat = new StatVfs(path.getPath());
 		long availableBlocks = stat.getFreeSpace();
 		return ConvertSize(availableBlocks);
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getTotalInternalMemorySize(Context con) {
-		FilePath fp  = new FilePath();
 		File path = FilePath.getInternalStorage(con);
 		StatVfs stat = new StatVfs(path.getPath());
 		long totalBlocks = stat.getSpace();
 		return ConvertSize(totalBlocks);
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getAvailableExternalMemorySize(Context con) {
 		if (ohos.data.usage.DataUsage.getDiskMountedStatus().equals(MountState.DISK_MOUNTED)) {
-			FilePath fp  = new FilePath();
 			File path = FilePath.getExternalStorage(con);
 			StatVfs stat = new StatVfs(path.getPath());
 			long availableBlocks = stat.getFreeSpace();
@@ -506,10 +539,8 @@ public class ExceptionHandler implements
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getTotalExternalMemorySize(Context con) {
 		if (ohos.data.usage.DataUsage.getDiskMountedStatus().equals(MountState.DISK_MOUNTED)) {
-			FilePath fp  = new FilePath();
 			File path = FilePath.getExternalStorage(con);
 			StatVfs stat = new StatVfs(path.getPath());
 			long totalBlocks = stat.getSpace();
@@ -518,7 +549,7 @@ public class ExceptionHandler implements
 			return "SDCard not present";
 		}
 	}
-	@SuppressWarnings("deprecation")
+
 	public String getNetworkMode(Context con) {
 		NetManager netManager = NetManager.getInstance(con);
 		NetCapabilities netCapabilities = netManager.getNetCapabilities(netManager.getDefaultNet());

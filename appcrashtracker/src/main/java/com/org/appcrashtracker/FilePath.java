@@ -9,6 +9,7 @@ public class FilePath {
     public static File getInternalStorage(Context context) {
         return context.getFilesDir();
     }
+
     public static File getExternalStorage(Context context) {
         File externalFilesDirPath = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         String externalStoragePath = "";
